@@ -234,6 +234,11 @@ public class MainActivity extends AppCompatActivity {
         textView.setPadding(dp2px, dp2px, dp2px, dp2px);
     }
 
+    /**
+     * 显示或者隐藏item布局
+     *
+     * @param openState
+     */
     private void hideOrShowContainer(boolean openState) {
         if (openState) {
             allItemContainer.setLayoutParams(rlp);

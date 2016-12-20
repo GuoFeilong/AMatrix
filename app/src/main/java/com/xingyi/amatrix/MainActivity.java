@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
         setTextViewContent(martrix, data.get(0));
         addItem2View(data);
-        hideOrShowContainer(bitmapMartrix.isOpenState());
+        allItemContainer.setVisibility(View.GONE);
         martrix.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -242,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
      * @param openState
      */
     private void hideOrShowContainer(boolean openState) {
+        allItemContainer.setVisibility(View.VISIBLE);
         ValueAnimator valueAnimator;
         if (openState) {
             valueAnimator = ValueAnimator.ofFloat(0.F, 1.F);

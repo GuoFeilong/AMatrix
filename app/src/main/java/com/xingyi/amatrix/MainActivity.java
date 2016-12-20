@@ -1,5 +1,6 @@
 package com.xingyi.amatrix;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -16,6 +17,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,11 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
     private TextView martrix;
     private MartrixImageView bitmapMartrix;
     private LinearLayout allItemContainer;
     private List<TextViewEntity> data;
-    private RelativeLayout.LayoutParams rlp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +101,8 @@ public class MainActivity extends AppCompatActivity {
         entity.setDrawableRes(R.mipmap.icon_2);
         entity.setTextDesc("ReactNative");
         data.add(entity);
+
+
     }
 
     private void changeTVMartrx() {
@@ -216,8 +220,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-            // 记录原始的位置信息
-            rlp = (RelativeLayout.LayoutParams) allItemContainer.getLayoutParams();
         }
     }
 
@@ -240,11 +242,28 @@ public class MainActivity extends AppCompatActivity {
      * @param openState
      */
     private void hideOrShowContainer(boolean openState) {
+        ValueAnimator valueAnimator;
         if (openState) {
-            allItemContainer.setLayoutParams(rlp);
+            valueAnimator = ValueAnimator.ofFloat(0.F, 1.F);
         } else {
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 0);
-            allItemContainer.setLayoutParams(params);
+            valueAnimator = ValueAnimator.ofFloat(1.F, 0.F);
         }
+        valueAnimator.setDuration(350);
+        valueAnimator.setInterpolator(new DecelerateInterpolator());
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float percent = Float.valueOf(animation.getAnimatedValue().toString());
+                // 动态的计算当前容器的高度
+                int currentHeight = (int) (bitmapMartrix.getHeight() * data.size() * percent);
+                if (percent >= 1) {
+                    currentHeight += data.size() * 5;
+                }
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, currentHeight);
+                params.addRule(RelativeLayout.BELOW, R.id.fl_select_contaier);
+                allItemContainer.setLayoutParams(params);
+            }
+        });
+        valueAnimator.start();
     }
 }

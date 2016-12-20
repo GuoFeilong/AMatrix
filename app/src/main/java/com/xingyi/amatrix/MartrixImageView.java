@@ -26,6 +26,7 @@ public class MartrixImageView extends View {
     private int currentMatrix;
     private boolean openState;
     private OpenListener openListener;
+    private float zDeep;
 
     public MartrixImageView(Context context) {
         this(context, null);
@@ -54,6 +55,7 @@ public class MartrixImageView extends View {
         if (bitmap != null) {
             matrix.reset();
             camera.save();
+            camera.translate(0,0, zDeep);
             camera.rotateX(currentMatrix);
             camera.getMatrix(matrix);
             camera.restore();
@@ -90,6 +92,7 @@ public class MartrixImageView extends View {
             public void onAnimationUpdate(ValueAnimator animation) {
                 float percent = Float.valueOf(animation.getAnimatedValue().toString());
                 currentMatrix = (int) (percent * matrixDegree);
+                zDeep = getHeight() /2 * percent;
                 invalidate();
             }
         });

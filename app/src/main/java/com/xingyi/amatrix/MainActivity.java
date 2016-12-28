@@ -12,6 +12,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -21,8 +22,13 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -31,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private MartrixImageView bitmapMartrix;
     private LinearLayout allItemContainer;
     private List<TextViewEntity> data;
+    private TextView calendarDesc;
+    private WithdrawClearEditText clearEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +79,97 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        calendarDesc = (TextView) findViewById(R.id.tv_calendar);
+        clearEditText = (WithdrawClearEditText) findViewById(R.id.cet_date);
+
+        calendarDesc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                boolean temp = showExpiredNotice(clearEditText.getText().toString());
+//                calendarDesc.setText("temp--->" + temp);
+                try {
+
+                    String all = clearEditText.getText().toString();
+                    String current = all.substring(0, all.length() - 3);
+                    calendarDesc.setText(showExpiredNoticeDesc(current));
+                    Toast.makeText(MainActivity.this, showExpiredNoticeDesc(clearEditText.getText().toString()), Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    Log.e("---", e.toString());
+                }
+
+            }
+        });
     }
+
+
+    private boolean showExpiredNotice(String expiredDesc) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+        Date expiredData;
+        Calendar expiredC = Calendar.getInstance();
+        Calendar currentC = Calendar.getInstance();
+
+        boolean showExpired;
+        try {
+            expiredData = sdf.parse(expiredDesc);
+            expiredC.setTime(expiredData);
+            Log.e("---信用卡过期日期---", sdf.format(expiredC.getTime()));
+            currentC.setTime(new Date());
+            Log.e("---当前日期---", sdf.format(currentC.getTime()));
+            currentC.add(Calendar.MONTH, 6);
+            Log.e("---当前日期加6个月后的日期---", sdf.format(currentC.getTime()));
+            showExpired = currentC.compareTo(expiredC) >= 0;
+        } catch (ParseException e) {
+            showExpired = false;
+            Log.e("---日期转换异常", e.toString());
+        }
+        return showExpired;
+    }
+
+
+    private String showExpiredNoticeDesc(String expiredDesc) {
+        String notice;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+        Date expiredData;
+        Calendar expiredC = Calendar.getInstance();
+        Calendar currentC = Calendar.getInstance();
+
+        try {
+            expiredData = sdf.parse(expiredDesc);
+            expiredC.setTime(expiredData);
+            Log.e("---信用卡过期日期---", sdf.format(expiredC.getTime()));
+            currentC.setTime(new Date());
+            Log.e("---当前日期---", sdf.format(currentC.getTime()));
+
+            String todayDesc = sdf.format(new Date());
+            if (expiredDesc.equals(todayDesc)) {
+                // 说明这个月过期
+                notice = "您的信用卡有效期将在6个月内过期，请及时申领新卡或修改有效期";
+                return notice;
+            } else {
+                int tempCom = currentC.compareTo(expiredC);
+                if (tempCom > 0) {
+                    // 先和当天日期做对比,判断是否已经过期
+                    notice = "您上次使用的信用卡已过期，请及时申领新卡或修改有效期";
+                    return notice;
+                } else {
+                    // 如果没有过期,在和六个月内的日期做对比
+                    currentC.add(Calendar.MONTH, 6);
+                    Log.e("---当前日期加6个月后的日期---", sdf.format(currentC.getTime()));
+                    if (currentC.compareTo(expiredC) >= 0) {
+                        notice = "您的信用卡有效期将在6个月内过期，请及时申领新卡或修改有效期";
+                    } else {
+                        notice = "";
+                    }
+                    return notice;
+                }
+            }
+        } catch (ParseException e) {
+            Log.e("---日期转换异常", e.toString());
+            notice = "";
+        }
+        return notice;
+    }
+
 
     /**
      * 构建模拟数据
